@@ -9,19 +9,6 @@ from gmpy2 import mpz, powmod
 
 from factorlab.utils import decompose
 
-
-"""
-Primality testing algorithms.
-
-Currently implemented:
-- Miller-Rabin probabilistic primality test.
-"""
-
-from gmpy2 import mpz, powmod
-
-from factorlab.utils import decompose
-
-
 SMALL_PRIMES: tuple[mpz, ...] = tuple(
     mpz(p)
     for p in (
