@@ -1,9 +1,18 @@
 [project]
-name = "pollard-rho"
+name = "factorlab"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "gmpy2>=2.3.1",
+    "pytest>=9.1.1",
 ]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["factorlab*"]

@@ -50,52 +50,33 @@ def _f(x: mpz, c: mpz, n: mpz) -> mpz:
 
     return (x * x + c) % n
 
-def pollard_rho(n: mpz) -> mpz:
+def pollard_rho(n: mpz, max_steps: int = 100_000, max_restarts: int = 20) -> mpz:
     """
-    Find a non-trivial factor of an odd composite integer using
-    Pollard's Rho algorithm.
-
-    Pollard's Rho performs a pseudo-random walk over the integers
-    modulo n using the polynomial
-
-        f(x) = x² + c (mod n)
-
-    Two walkers are advanced using Floyd's cycle-finding algorithm.
-    Whenever
-
-        gcd(|x - y|, n)
-
-    becomes greater than one, a non-trivial factor has been found.
-
-    Since the algorithm is probabilistic, a single run may fail.
-    In that case the random walk is restarted with different initial
-    parameters until a factor is discovered.
+    Find a non-trivial factor of n using Pollard's Rho algorithm.
 
     Parameters
     ----------
     n : mpz
-        Odd composite integer to be factored.
+        Integer to be factored.
+
+    max_steps : int, optional
+        Maximum number of Floyd iterations per random walk.
+
+    max_restarts : int, optional
+        Maximum number of random restarts.
 
     Returns
     -------
     mpz
-        A non-trivial factor of n.
+        A non-trivial factor of n. If n is prime, n itself is returned.
 
     Raises
     ------
     ValueError
         If n < 2.
 
-    Notes
-    -----
-    This implementation uses Floyd's tortoise-and-hare cycle
-    detection algorithm.
-
-    The expected running time is approximately
-
-        O(n^(1/4))
-
-    for integers having two similarly-sized prime factors.
+    RuntimeError
+        If no non-trivial factor is found within the given limits.
     """
 
     if n < 2:
@@ -107,21 +88,25 @@ def pollard_rho(n: mpz) -> mpz:
     if is_prime(n):
         return n
 
-    while True:
+    n_int = int(n)
 
-        # Random starting point
-        x = ...
-        y = ...
-        c = ...
+    for _ in range(max_restarts):
+        x = mpz(randrange(2, n_int))
+        y = x
+        c = mpz(randrange(1, n_int))
 
         d = mpz(1)
 
-        while d == 1:
-
+        for _ in range(max_steps):
             x = _f(x, c, n)
             y = _f(_f(y, c, n), c, n)
 
             d = gcd(abs(x - y), n)
 
-        if d != n:
-            return d
+            if d == n:
+                break
+
+            if d > 1:
+                return d
+
+    raise RuntimeError("Pollard Rho failed to find a factor within the given limits")
