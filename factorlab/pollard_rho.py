@@ -16,7 +16,6 @@ on clarity and readability rather than absolute performance.
 """
 
 from random import randrange
-
 from gmpy2 import gcd, mpz
 
 from factorlab.primality import is_prime
@@ -50,7 +49,12 @@ def _f(x: mpz, c: mpz, n: mpz) -> mpz:
 
     return (x * x + c) % n
 
-def pollard_rho(n: mpz, max_steps: int = 100_000, max_restarts: int = 20) -> mpz:
+
+def pollard_rho(
+    n: mpz,
+    max_steps: int = 100_000,
+    max_restarts: int = 20,
+) -> mpz:
     """
     Find a non-trivial factor of n using Pollard's Rho algorithm.
 
@@ -109,4 +113,6 @@ def pollard_rho(n: mpz, max_steps: int = 100_000, max_restarts: int = 20) -> mpz
             if d > 1:
                 return d
 
-    raise RuntimeError("Pollard Rho failed to find a factor within the given limits")
+    raise RuntimeError(
+        "Pollard Rho failed to find a factor within the given limits"
+    )

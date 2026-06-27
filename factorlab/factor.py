@@ -23,13 +23,17 @@ Sieve, or GNFS) can be integrated transparently without changing the
 external API.
 """
 
+import logging
+
 from gmpy2 import mpz
 
-from factorlab.primality import is_prime
-from factorlab.pollard_rho import pollard_rho
+from .pollard_rho import pollard_rho
+from .primality import is_prime
+
+logger = logging.getLogger(__name__)
 
 
-def factor(n: mpz) -> list[mpz]:
+def factor(n: mpz, *, _root: bool = True,) -> list[mpz]:
     """
     Compute the complete prime factorisation of a positive integer.
 
@@ -48,7 +52,7 @@ def factor(n: mpz) -> list[mpz]:
     ValueError
         If n < 1.
     """
-    
+
     if n < 1:
         raise ValueError("n must be a positive integer")
 
@@ -58,12 +62,34 @@ def factor(n: mpz) -> list[mpz]:
     if is_prime(n):
         return [n]
 
-    d = pollard_rho(n)
+    try:
+        left = pollard_rho(n)
+    except RuntimeError:
+        logger.warning("[Factor] Pollard Rho exhausted.")
+        logger.warning(f"[Factor] Remaining composite: {n}")
+        return [n]
+    
+    right = n // left
 
-    left = factor(d)
-    right = factor(n // d)
+    logger.info(f"[Factor] Split {n} into {left} × {right}.")
 
-    result = left + right
+    if is_prime(left):
+        logger.info(f"[Factor] Left divisor {left} is prime.")
+    else:
+        logger.info(f"[Factor] Left divisor {left} is composite.")
+
+    if is_prime(right):
+        logger.info(f"[Factor] Right divisor {right} is prime.\n")
+    else:
+        logger.info(f"[Factor] Right divisor {right} is composite.\n")
+
+    left_result = factor(left, _root=False)
+    right_result = factor(right, _root=False)
+
+    result = left_result + right_result
     result.sort()
+
+    if _root:
+        logger.info(f"[Factor] Complete factorisation of {n}.")
 
     return result
