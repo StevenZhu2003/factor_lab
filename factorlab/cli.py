@@ -16,12 +16,13 @@ performance statistics.
 
 import argparse
 import logging
+import sys
 
 from gmpy2 import mpz
 
 from factorlab.factor import factor
 
-def cli() -> int:
+def cli(argv: list[str] | None = None) -> int:
     """
     Command-line entry point.
     """
@@ -44,12 +45,14 @@ def cli() -> int:
         help="Enable verbose output.",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     if args.verbose:
         logging.basicConfig(
             level=logging.INFO,
             format="%(message)s",
+            stream=sys.stdout,
+            force=True,
         )
 
     factors = factor(args.integer)

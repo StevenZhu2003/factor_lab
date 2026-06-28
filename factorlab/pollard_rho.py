@@ -50,11 +50,7 @@ def _f(x: mpz, c: mpz, n: mpz) -> mpz:
     return (x * x + c) % n
 
 
-def pollard_rho(
-    n: mpz,
-    max_steps: int = 100_000,
-    max_restarts: int = 20,
-) -> mpz:
+def pollard_rho(n: mpz, max_steps = 10_000_000, max_restarts = 64,) -> mpz:
     """
     Find a non-trivial factor of n using Pollard's Rho algorithm.
 
