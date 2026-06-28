@@ -113,7 +113,7 @@ def pollard_rho_floyd(n: mpz, max_steps = 10_000_000, max_restarts = 64,) -> mpz
         "Pollard Rho failed to find a factor within the given limits"
     )
 
-def pollard_rho(n: mpz, max_steps: int = 10_000_000, max_restarts: int = 64, batch_size: int = 64,) -> mpz:
+def pollard_rho(n: mpz, max_steps: int = 50_000_000, max_restarts: int = 16, batch_size: int = 64,) -> mpz:
     """
     Find a non-trivial factor of n using Brent's Pollard Rho algorithm.
 

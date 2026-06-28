@@ -27,13 +27,14 @@ import logging
 
 from gmpy2 import mpz
 
-from .pollard_rho import pollard_rho
-from .primality import is_prime
+from factorlab.pollard_rho import pollard_rho
+from factorlab.primality import is_prime
+from factorlab.trial_division import trial_division
 
 logger = logging.getLogger(__name__)
 
 
-def factor(n: mpz, *, _root: bool = True,) -> list[mpz]:
+def factor(n: mpz, _root: bool = True) -> list[mpz]:
     """
     Compute the complete prime factorisation of a positive integer.
 
@@ -41,6 +42,9 @@ def factor(n: mpz, *, _root: bool = True,) -> list[mpz]:
     ----------
     n : mpz
         Positive integer to be factorised.
+
+    _root : bool, optional
+        Internal flag indicating whether this is the top-level call.
 
     Returns
     -------
@@ -59,37 +63,83 @@ def factor(n: mpz, *, _root: bool = True,) -> list[mpz]:
     if n == 1:
         return []
 
-    if is_prime(n):
-        return [n]
+    result: list[mpz] = []
 
-    try:
-        left = pollard_rho(n)
-    except RuntimeError:
-        logger.warning("[Factor] Pollard Rho exhausted.")
-        logger.warning(f"[Factor] Remaining composite: {n}")
-        return [n]
-    
-    right = n // left
+    #
+    # Stage 1: Trial division
+    #
+    small_factors, remaining = trial_division(n)
 
-    logger.info(f"[Factor] Split {n} into {left} × {right}.")
+    if small_factors:
+        result.extend(small_factors)
 
-    if is_prime(left):
-        logger.info(f"[Factor] Left divisor {left} is prime.")
-    else:
-        logger.info(f"[Factor] Left divisor {left} is composite.")
+        logging.info(
+            "[Trial Division] Found %d small factor(s).",
+            len(small_factors),
+        )
 
-    if is_prime(right):
-        logger.info(f"[Factor] Right divisor {right} is prime.\n")
-    else:
-        logger.info(f"[Factor] Right divisor {right} is composite.\n")
+    if remaining == 1:
+        result.sort()
 
-    left_result = factor(left, _root=False)
-    right_result = factor(right, _root=False)
+        if _root:
+            logging.info(
+                "[Factor] Complete factorisation of %s.",
+                n,
+            )
 
-    result = left_result + right_result
+        return result
+
+    #
+    # Stage 2: Remaining number is prime
+    #
+    if is_prime(remaining):
+        result.append(remaining)
+        result.sort()
+
+        if _root:
+            logging.info(
+                "[Factor] Complete factorisation of %s.",
+                n,
+            )
+
+        return result
+
+    #
+    # Stage 3: Pollard Rho
+    #
+    left = pollard_rho(remaining)
+    right = remaining // left
+
+    logging.info(
+        "[Factor] Split %s into %s × %s.",
+        remaining,
+        left,
+        right,
+    )
+
+    logging.info(
+        "[Factor] Left divisor %s is %s.",
+        left,
+        "prime" if is_prime(left) else "composite",
+    )
+
+    logging.info(
+        "[Factor] Right divisor %s is %s.",
+        right,
+        "prime" if is_prime(right) else "composite",
+    )
+
+    logging.info("")
+
+    result.extend(factor(left, _root=False))
+    result.extend(factor(right, _root=False))
+
     result.sort()
 
     if _root:
-        logger.info(f"[Factor] Complete factorisation of {n}.")
+        logging.info(
+            "[Factor] Complete factorisation of %s.",
+            n,
+        )
 
     return result

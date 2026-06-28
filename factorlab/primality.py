@@ -8,6 +8,7 @@ Currently implemented:
 from gmpy2 import mpz, powmod
 
 from factorlab.utils import decompose
+from factorlab.primes import PRIMES
 
 SMALL_PRIMES: tuple[mpz, ...] = tuple(
     mpz(p)
@@ -44,7 +45,7 @@ def is_prime(n: mpz) -> bool:
     if n < 2:
         return False
 
-    for p in SMALL_PRIMES:
+    for p in PRIMES:
         if n == p:
             return True
         if n % p == 0:
